@@ -234,6 +234,27 @@ class McKaysRepository(private val context: Context) {
     suspend fun saveStaffAccount(staff: StaffAccount) {
         val docId = if (staff.id.isBlank()) UUID.randomUUID().toString() else staff.id
         db.collection("staff").document(docId).set(staff.copy(id = docId)).await()
+
+        try {
+            val branchItems = db.collection("inventory")
+                .whereEqualTo("branch", staff.branch)
+                .limit(1)
+                .get()
+                .await()
+            if (branchItems.isEmpty) {
+                val starterItems = listOf(
+                    InventoryItem(id = "${staff.branch.lowercase().replace(" ", "_")}-1", branch = staff.branch, name = "VC Scandal", stock_ml = 50.0, stock_botol = 20),
+                    InventoryItem(id = "${staff.branch.lowercase().replace(" ", "_")}-2", branch = staff.branch, name = "Pink Shiffon", stock_ml = 50.0, stock_botol = 20),
+                    InventoryItem(id = "${staff.branch.lowercase().replace(" ", "_")}-3", branch = staff.branch, name = "PL Romantichwish", stock_ml = 50.0, stock_botol = 20),
+                    InventoryItem(id = "${staff.branch.lowercase().replace(" ", "_")}-4", branch = staff.branch, name = "ES Cherry", stock_ml = 30.0, stock_botol = 15)
+                )
+                for (item in starterItems) {
+                    db.collection("inventory").document(item.id).set(item).await()
+                }
+            }
+        } catch (e: Exception) {
+            Log.w("McKaysRepo", "Starter inventory creation note: ${e.message}")
+        }
     }
 
     suspend fun deleteStaffAccount(id: String) {

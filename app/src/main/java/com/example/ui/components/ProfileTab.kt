@@ -52,6 +52,7 @@ fun ProfileTab(
 
     var editingStaffId by remember { mutableStateOf<String?>(null) }
     var editStaffNewPass by remember { mutableStateOf("") }
+    var visiblePasswords by remember { mutableStateOf(setOf<String>()) }
 
     var bulkBranch by remember { mutableStateOf("Pusat") }
     var bulkText by remember { mutableStateOf("") }
@@ -573,46 +574,162 @@ fun ProfileTab(
                     )
 
                     staffAccounts.forEach { staff ->
+                        val isPassVisible = visiblePasswords.contains(staff.id)
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(16.dp))
                                 .background(if (darkMode) Color(0xFF1E293B) else Color(0xFFF8FAFC))
-                                .border(1.dp, borderColor, RoundedCornerShape(14.dp))
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                                .padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "${staff.username} (${staff.branch})",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = textPrimary
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .clip(CircleShape)
+                                            .background(BluePrimary.copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Person,
+                                            contentDescription = null,
+                                            tint = BluePrimary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
 
-                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Column {
+                                        Text(
+                                            text = staff.username,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = textPrimary
+                                        )
+                                        Text(
+                                            text = "Cabang: ${staff.branch}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = BluePrimary
+                                        )
+                                    }
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(EmeraldSuccess.copy(alpha = 0.15f))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "Akses Aktif",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = EmeraldSuccess
+                                    )
+                                }
+                            }
+
+                            // Password Display Row with Visibility Toggle
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(if (darkMode) Color(0xFF0F172A) else Color(0xFFF1F5F9))
+                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = "Password:",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = textMuted
+                                    )
+                                    Text(
+                                        text = if (isPassVisible) staff.password else "••••••••",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = textPrimary
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = {
+                                        visiblePasswords = if (isPassVisible) {
+                                            visiblePasswords - staff.id
+                                        } else {
+                                            visiblePasswords + staff.id
+                                        }
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (isPassVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = "Lihat Password",
+                                        tint = textMuted,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+
+                            // Actions Row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        editingStaffId = if (editingStaffId == staff.id) null else staff.id
+                                        editStaffNewPass = ""
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.LockReset,
+                                        contentDescription = null,
+                                        tint = BluePrimary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = if (editingStaffId == staff.id) "Batal" else "Reset Password",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = BluePrimary,
-                                        modifier = Modifier.clickable {
-                                            editingStaffId = if (editingStaffId == staff.id) null else staff.id
-                                            editStaffNewPass = ""
-                                        }
+                                        color = BluePrimary
                                     )
+                                }
+
+                                Spacer(modifier = Modifier.width(4.dp))
+
+                                TextButton(
+                                    onClick = { viewModel.deleteStaffAccount(staff.id) }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = null,
+                                        tint = RoseAlert,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = "Hapus",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = RoseAlert,
-                                        modifier = Modifier.clickable {
-                                            viewModel.deleteStaffAccount(staff.id)
-                                        }
+                                        color = RoseAlert
                                     )
                                 }
                             }
@@ -626,7 +743,7 @@ fun ProfileTab(
                                     OutlinedTextField(
                                         value = editStaffNewPass,
                                         onValueChange = { editStaffNewPass = it },
-                                        placeholder = { Text("Password baru...", fontSize = 11.sp) },
+                                        placeholder = { Text("Password baru untuk ${staff.username}...", fontSize = 11.sp) },
                                         singleLine = true,
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(10.dp)
@@ -642,7 +759,7 @@ fun ProfileTab(
                                         shape = RoundedCornerShape(10.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
                                     ) {
-                                        Text("Reset", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        Text("Simpan", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
