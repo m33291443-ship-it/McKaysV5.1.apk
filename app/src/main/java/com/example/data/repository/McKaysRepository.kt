@@ -262,7 +262,38 @@ class McKaysRepository(private val context: Context) {
     }
 
     suspend fun updateStaffPassword(id: String, newPass: String) {
-        db.collection("staff").document(id).update("password", newPass).await()
+        try {
+            val doc = db.collection("staff").document(id).get().await()
+            val existing = doc.toObject(StaffAccount::class.java)
+            if (existing != null) {
+                db.collection("staff").document(id).set(existing.copy(password = newPass.trim())).await()
+            } else {
+                db.collection("staff").document(id).update("password", newPass.trim()).await()
+            }
+        } catch (e: Exception) {
+            db.collection("staff").document(id).update("password", newPass.trim()).await()
+        }
+    }
+
+    suspend fun updateStaffAccount(id: String, newUsername: String, newPass: String, newBranch: String) {
+        val updated = StaffAccount(
+            id = id,
+            username = newUsername.trim(),
+            password = newPass.trim(),
+            branch = newBranch.trim()
+        )
+        db.collection("staff").document(id).set(updated).await()
+    }
+
+    suspend fun seedDefaultStaff() {
+        val defaultStaff = listOf(
+            StaffAccount(id = "staff-1", username = "budi", password = "123", branch = "Bandung"),
+            StaffAccount(id = "staff-2", username = "surabaya", password = "123", branch = "Surabaya"),
+            StaffAccount(id = "staff-3", username = "medan", password = "123", branch = "Medan")
+        )
+        for (s in defaultStaff) {
+            saveStaffAccount(s)
+        }
     }
 
     suspend fun createStockOrder(order: StockOrder) {

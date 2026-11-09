@@ -277,11 +277,38 @@ class McKaysViewModel(application: Application) : AndroidViewModel(application) 
         updateStaffPassword(staffId, newPass)
     }
 
+    fun resetStaffAccount(staffId: String, username: String, newPass: String, branch: String) {
+        viewModelScope.launch {
+            repository.updateStaffAccount(staffId, username, newPass, branch)
+            showToast("Akun staff $username ($branch) berhasil diperbarui!")
+        }
+    }
+
+    fun seedDefaultStaff() {
+        viewModelScope.launch {
+            repository.seedDefaultStaff()
+            showToast("Akun staff default berhasil dimuat!")
+        }
+    }
+
     fun deleteStaffAccount(staffId: String) {
         viewModelScope.launch {
             repository.deleteStaffAccount(staffId)
             showToast("Akun staff berhasil dihapus.")
         }
+    }
+
+    fun onGoogleSignInSuccess(email: String?, photoUrl: String?) {
+        val cleanEmail = email ?: "budayaxwel@gmail.com"
+        val adminUser = UserSession(
+            username = cleanEmail.substringBefore("@"),
+            role = "admin",
+            branch = "Pusat",
+            profilePic = photoUrl ?: prefs.getString("user_pic_google", null)
+        )
+        _currentUser.value = adminUser
+        saveUserSession(adminUser)
+        showToast("Login Google berhasil sebagai Admin!")
     }
 
     fun bulkUploadInventory(branch: String, text: String) {

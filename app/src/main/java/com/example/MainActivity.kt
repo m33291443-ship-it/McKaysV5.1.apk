@@ -113,8 +113,9 @@ class MainActivity : ComponentActivity() {
                 if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
                     val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
-                    Firebase.auth.signInWithCredential(authCredential).await()
-                    viewModel.showToast("Google Sign-In berhasil! Data cloud tersinkronisasi.")
+                    val authResult = Firebase.auth.signInWithCredential(authCredential).await()
+                    val user = authResult.user
+                    viewModel.onGoogleSignInSuccess(user?.email, user?.photoUrl?.toString())
                 } else {
                     viewModel.showToast("Tipe kredensial Google tidak dikenali.")
                 }

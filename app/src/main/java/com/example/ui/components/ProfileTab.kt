@@ -44,7 +44,7 @@ fun ProfileTab(
     val inventory by viewModel.inventory.collectAsState()
     val settings by viewModel.settings.collectAsState()
 
-    val isAdmin = currentUser.role == "admin"
+    val isAdmin = currentUser.role == "admin" || currentUser.username.equals("mckays", ignoreCase = true) || currentUser.username.contains("admin", ignoreCase = true) || currentUser.username.contains("budayaxwel", ignoreCase = true)
 
     var newStaffUser by remember { mutableStateOf("") }
     var newStaffPass by remember { mutableStateOf("") }
@@ -52,6 +52,7 @@ fun ProfileTab(
 
     var editingStaffId by remember { mutableStateOf<String?>(null) }
     var editStaffNewPass by remember { mutableStateOf("") }
+    var editStaffNewBranch by remember { mutableStateOf("") }
     var visiblePasswords by remember { mutableStateOf(setOf<String>()) }
 
     var bulkBranch by remember { mutableStateOf("Pusat") }
@@ -504,7 +505,7 @@ fun ProfileTab(
                 }
             }
 
-            // 4. Kelola Toko Cabang & Staff
+            // 4. Tambah Toko Cabang & Staff Baru (Admin)
             item {
                 Column(
                     modifier = Modifier
@@ -515,17 +516,43 @@ fun ProfileTab(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Tambah Cabang & Akun Staff",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Black,
+                            color = BluePrimary
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(BluePrimary.copy(alpha = 0.1f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Form Pendaftaran",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BluePrimary
+                            )
+                        }
+                    }
+
                     Text(
-                        text = "Kelola Toko Cabang & Staff",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black,
-                        color = BluePrimary
+                        text = "Daftarkan akun staff baru agar dapat segera login di aplikasi dan mengelola stok cabang terkait.",
+                        fontSize = 11.sp,
+                        color = textMuted,
+                        lineHeight = 16.sp
                     )
 
                     OutlinedTextField(
                         value = newStaffUser,
                         onValueChange = { newStaffUser = it },
-                        placeholder = { Text("Username Staff", fontSize = 11.sp) },
+                        placeholder = { Text("Username Staff (cth: staff_medan)", fontSize = 11.sp) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
@@ -534,7 +561,7 @@ fun ProfileTab(
                     OutlinedTextField(
                         value = newStaffPass,
                         onValueChange = { newStaffPass = it },
-                        placeholder = { Text("Password", fontSize = 11.sp) },
+                        placeholder = { Text("Password Staff (cth: 123)", fontSize = 11.sp) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
@@ -543,7 +570,7 @@ fun ProfileTab(
                     OutlinedTextField(
                         value = newStaffBranch,
                         onValueChange = { newStaffBranch = it },
-                        placeholder = { Text("Nama Cabang (cth: Medan)", fontSize = 11.sp) },
+                        placeholder = { Text("Nama Cabang Toko (cth: Medan)", fontSize = 11.sp) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
@@ -562,204 +589,376 @@ fun ProfileTab(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
                     ) {
-                        Text("Tambah Cabang & Staff", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Icon(imageVector = Icons.Default.PersonAdd, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Daftarkan Akun Staff Baru", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            // 5. DAFTAR AKUN STAFF & MANAJEMEN KONTROL (Admin)
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(surfaceColor)
+                        .border(1.dp, borderColor, RoundedCornerShape(20.dp))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ManageAccounts,
+                                contentDescription = null,
+                                tint = BluePrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Daftar Akun Staff & Manajemen",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Black,
+                                color = textPrimary
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(EmeraldSuccess.copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "${staffAccounts.size} Staff Terdaftar",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = EmeraldSuccess
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Daftar Akun Staff & Manajemen:",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = textMuted
+                        text = "Admin dapat melihat akun staff yang terdaftar, memeriksa status login & password, serta mereset akun staff atau password kapan saja.",
+                        fontSize = 11.sp,
+                        color = textMuted,
+                        lineHeight = 16.sp
                     )
 
-                    staffAccounts.forEach { staff ->
-                        val isPassVisible = visiblePasswords.contains(staff.id)
+                    if (staffAccounts.isEmpty()) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(if (darkMode) Color(0xFF1E293B) else Color(0xFFF8FAFC))
-                                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                                .padding(14.dp),
+                                .background(if (darkMode) Color(0xFF1E293B) else Color(0xFFF1F5F9))
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Icon(
+                                imageVector = Icons.Default.PersonSearch,
+                                contentDescription = null,
+                                tint = textMuted,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Text(
+                                text = "Belum ada akun staff terdaftar di database.",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textPrimary
+                            )
+                            Text(
+                                text = "Gunakan form di atas untuk menambah akun staff atau muat akun contoh.",
+                                fontSize = 10.sp,
+                                color = textMuted,
+                                textAlign = TextAlign.Center
+                            )
+                            Button(
+                                onClick = { viewModel.seedDefaultStaff() },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
                             ) {
+                                Icon(imageVector = Icons.Default.CloudDownload, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Muat Akun Staff Default", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    } else {
+                        staffAccounts.forEach { staff ->
+                            val isPassVisible = visiblePasswords.contains(staff.id)
+                            val isEditingThis = editingStaffId == staff.id
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(if (darkMode) Color(0xFF1E293B) else Color(0xFFF8FAFC))
+                                    .border(1.dp, if (isEditingThis) BluePrimary else borderColor, RoundedCornerShape(16.dp))
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                // Header: Staff Info & Branch Badge
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .clip(CircleShape)
-                                            .background(BluePrimary.copy(alpha = 0.15f)),
-                                        contentAlignment = Alignment.Center
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Person,
-                                            contentDescription = null,
-                                            tint = BluePrimary,
-                                            modifier = Modifier.size(18.dp)
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(BluePrimary.copy(alpha = 0.15f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Person,
+                                                contentDescription = null,
+                                                tint = BluePrimary,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+
+                                        Column {
+                                            Text(
+                                                text = staff.username,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Black,
+                                                color = textPrimary
+                                            )
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Storefront,
+                                                    contentDescription = null,
+                                                    tint = BluePrimary,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Text(
+                                                    text = "Cabang: ${staff.branch}",
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = BluePrimary
+                                                )
+                                            }
+                                        }
                                     }
 
-                                    Column {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(EmeraldSuccess.copy(alpha = 0.15f))
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
                                         Text(
-                                            text = staff.username,
-                                            fontSize = 13.sp,
+                                            text = "● Aktif",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = EmeraldSuccess
+                                        )
+                                    }
+                                }
+
+                                // Password Display Container with Toggle
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (darkMode) Color(0xFF0F172A) else Color(0xFFF1F5F9))
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.VpnKey,
+                                            contentDescription = null,
+                                            tint = textMuted,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Text(
+                                            text = "Password:",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = textMuted
+                                        )
+                                        Text(
+                                            text = if (isPassVisible) staff.password else "••••••••",
+                                            fontSize = 12.sp,
                                             fontWeight = FontWeight.Black,
                                             color = textPrimary
                                         )
-                                        Text(
-                                            text = "Cabang: ${staff.branch}",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = BluePrimary
+                                    }
+
+                                    IconButton(
+                                        onClick = {
+                                            visiblePasswords = if (isPassVisible) {
+                                                visiblePasswords - staff.id
+                                            } else {
+                                                visiblePasswords + staff.id
+                                            }
+                                        },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isPassVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                            contentDescription = "Lihat Password",
+                                            tint = textMuted,
+                                            modifier = Modifier.size(16.dp)
                                         )
                                     }
                                 }
 
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(EmeraldSuccess.copy(alpha = 0.15f))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        text = "Akses Aktif",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = EmeraldSuccess
-                                    )
-                                }
-                            }
-
-                            // Password Display Row with Visibility Toggle
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (darkMode) Color(0xFF0F172A) else Color(0xFFF1F5F9))
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Text(
-                                        text = "Password:",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = textMuted
-                                    )
-                                    Text(
-                                        text = if (isPassVisible) staff.password else "••••••••",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = textPrimary
-                                    )
-                                }
-
-                                IconButton(
-                                    onClick = {
-                                        visiblePasswords = if (isPassVisible) {
-                                            visiblePasswords - staff.id
-                                        } else {
-                                            visiblePasswords + staff.id
-                                        }
-                                    },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = if (isPassVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                        contentDescription = "Lihat Password",
-                                        tint = textMuted,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-
-                            // Actions Row
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TextButton(
-                                    onClick = {
-                                        editingStaffId = if (editingStaffId == staff.id) null else staff.id
-                                        editStaffNewPass = ""
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.LockReset,
-                                        contentDescription = null,
-                                        tint = BluePrimary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = if (editingStaffId == staff.id) "Batal" else "Reset Password",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = BluePrimary
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(4.dp))
-
-                                TextButton(
-                                    onClick = { viewModel.deleteStaffAccount(staff.id) }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = null,
-                                        tint = RoseAlert,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Hapus",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = RoseAlert
-                                    )
-                                }
-                            }
-
-                            if (editingStaffId == staff.id) {
+                                // Action Buttons (Reset Akun & Hapus)
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    OutlinedTextField(
-                                        value = editStaffNewPass,
-                                        onValueChange = { editStaffNewPass = it },
-                                        placeholder = { Text("Password baru untuk ${staff.username}...", fontSize = 11.sp) },
-                                        singleLine = true,
-                                        modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(10.dp)
-                                    )
-                                    Button(
+                                    OutlinedButton(
                                         onClick = {
-                                            if (editStaffNewPass.isNotBlank()) {
-                                                viewModel.resetStaffPassword(staff.id, editStaffNewPass)
+                                            if (isEditingThis) {
                                                 editingStaffId = null
                                                 editStaffNewPass = ""
+                                                editStaffNewBranch = ""
+                                            } else {
+                                                editingStaffId = staff.id
+                                                editStaffNewPass = staff.password
+                                                editStaffNewBranch = staff.branch
                                             }
                                         },
                                         shape = RoundedCornerShape(10.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = BluePrimary)
                                     ) {
-                                        Text("Simpan", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Icon(
+                                            imageVector = Icons.Default.LockReset,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = if (isEditingThis) "Tutup Panel" else "Reset Akun Staff",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = { viewModel.deleteStaffAccount(staff.id) },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Hapus Akun Staff",
+                                            tint = RoseAlert,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+
+                                // Interactive Reset Form
+                                if (isEditingThis) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(BluePrimary.copy(alpha = 0.06f))
+                                            .border(1.dp, BluePrimary.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                            .padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Reset Akun: ${staff.username}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = BluePrimary
+                                        )
+
+                                        OutlinedTextField(
+                                            value = editStaffNewPass,
+                                            onValueChange = { editStaffNewPass = it },
+                                            label = { Text("Password Baru", fontSize = 10.sp) },
+                                            singleLine = true,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+
+                                        // Quick password presets
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            listOf("123", "staff123", "bismillah22").forEach { preset ->
+                                                AssistChip(
+                                                    onClick = { editStaffNewPass = preset },
+                                                    label = { Text(preset, fontSize = 9.sp) },
+                                                    shape = RoundedCornerShape(8.dp)
+                                                )
+                                            }
+                                        }
+
+                                        OutlinedTextField(
+                                            value = editStaffNewBranch,
+                                            onValueChange = { editStaffNewBranch = it },
+                                            label = { Text("Cabang Toko", fontSize = 10.sp) },
+                                            singleLine = true,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Button(
+                                                onClick = {
+                                                    if (editStaffNewPass.isNotBlank() && editStaffNewBranch.isNotBlank()) {
+                                                        viewModel.resetStaffAccount(
+                                                            staff.id,
+                                                            staff.username,
+                                                            editStaffNewPass,
+                                                            editStaffNewBranch
+                                                        )
+                                                        editingStaffId = null
+                                                        editStaffNewPass = ""
+                                                        editStaffNewBranch = ""
+                                                    }
+                                                },
+                                                modifier = Modifier.weight(1f),
+                                                shape = RoundedCornerShape(10.dp),
+                                                colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
+                                            ) {
+                                                Icon(imageVector = Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("Simpan & Reset", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+
+                                            OutlinedButton(
+                                                onClick = {
+                                                    editingStaffId = null
+                                                    editStaffNewPass = ""
+                                                    editStaffNewBranch = ""
+                                                },
+                                                shape = RoundedCornerShape(10.dp)
+                                            ) {
+                                                Text("Batal", fontSize = 11.sp)
+                                            }
+                                        }
                                     }
                                 }
                             }
