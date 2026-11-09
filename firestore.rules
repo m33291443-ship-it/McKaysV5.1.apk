@@ -1,0 +1,143 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Validation Helpers
+    function isValidBranch(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100;
+    }
+
+    function isValidStaff(data) {
+      return data.username is string && data.username.size() >= 2 && data.username.size() <= 50 &&
+             data.password is string && data.password.size() >= 3 && data.password.size() <= 100 &&
+             data.branch is string && data.branch.size() > 0 && data.branch.size() <= 100;
+    }
+
+    function isValidInventory(data) {
+      return data.branch is string && data.branch.size() > 0 && data.branch.size() <= 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.stock_ml is number && data.stock_ml >= 0 &&
+             data.stock_botol is number && data.stock_botol >= 0;
+    }
+
+    function isValidMasterPrice(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.price_ml is number && data.price_ml >= 0 &&
+             data.price_botol is number && data.price_botol >= 0;
+    }
+
+    function isValidStockOrder(data) {
+      return data.branch is string && data.branch.size() > 0 && data.branch.size() <= 100 &&
+             data.item is string && data.item.size() > 0 && data.item.size() <= 100 &&
+             data.ml is number && data.ml >= 0 &&
+             data.bottleSize is string && data.bottleSize.size() > 0 && data.bottleSize.size() <= 50 &&
+             data.botol is number && data.botol >= 0 &&
+             data.status in ['Menunggu Persetujuan', 'Disetujui', 'Ditolak'];
+    }
+
+    function isValidTransaction(data) {
+      return data.branch is string && data.branch.size() > 0 && data.branch.size() <= 100 &&
+             data.type is string && data.type.size() > 0 && data.type.size() <= 100 &&
+             data.item is string && data.item.size() > 0 && data.item.size() <= 200 &&
+             data.price is number && data.price >= 0 &&
+             data.member is string && data.member.size() > 0 && data.member.size() <= 100 &&
+             data.date is string && data.date.size() >= 8 && data.date.size() <= 20;
+    }
+
+    function isValidMember(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.phone is string && data.phone.size() <= 50 &&
+             data.points is number && data.points >= 0;
+    }
+
+    function isValidSetting(data) {
+      return (!('appLogo' in data) || data.appLogo == null || (data.appLogo is string && data.appLogo.size() <= 2000000)) &&
+             data.googleDriveSyncAccount is string && data.googleDriveSyncAccount.size() <= 100;
+    }
+
+    // Branches Collection
+    match /branches/{branchId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(branchId) && isValidBranch(incoming());
+      allow update: if isSignedIn() && isValidId(branchId) && isValidBranch(incoming());
+      allow delete: if isSignedIn() && isValidId(branchId);
+    }
+
+    // Staff Accounts Collection
+    match /staff/{staffId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(staffId) && isValidStaff(incoming());
+      allow update: if isSignedIn() && isValidId(staffId) && isValidStaff(incoming());
+      allow delete: if isSignedIn() && isValidId(staffId);
+    }
+
+    // Inventory Collection
+    match /inventory/{itemId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(itemId) && isValidInventory(incoming());
+      allow update: if isSignedIn() && isValidId(itemId) && isValidInventory(incoming());
+      allow delete: if isSignedIn() && isValidId(itemId);
+    }
+
+    // Master Prices Collection
+    match /master_prices/{priceId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(priceId) && isValidMasterPrice(incoming());
+      allow update: if isSignedIn() && isValidId(priceId) && isValidMasterPrice(incoming());
+      allow delete: if isSignedIn() && isValidId(priceId);
+    }
+
+    // Stock Orders Collection
+    match /stock_orders/{orderId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(orderId) && isValidStockOrder(incoming());
+      allow update: if isSignedIn() && isValidId(orderId) && isValidStockOrder(incoming());
+      allow delete: if isSignedIn() && isValidId(orderId);
+    }
+
+    // Transactions Collection
+    match /transactions/{transactionId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(transactionId) && isValidTransaction(incoming());
+      allow update: if isSignedIn() && isValidId(transactionId) && isValidTransaction(incoming());
+      allow delete: if isSignedIn() && isValidId(transactionId);
+    }
+
+    // Members Collection
+    match /members/{memberId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(memberId) && isValidMember(incoming());
+      allow update: if isSignedIn() && isValidId(memberId) && isValidMember(incoming());
+      allow delete: if isSignedIn() && isValidId(memberId);
+    }
+
+    // Settings Collection
+    match /settings/{settingId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(settingId) && isValidSetting(incoming());
+      allow update: if isSignedIn() && isValidId(settingId) && isValidSetting(incoming());
+      allow delete: if isSignedIn() && isValidId(settingId);
+    }
+  }
+}

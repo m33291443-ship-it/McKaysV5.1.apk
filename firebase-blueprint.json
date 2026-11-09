@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "Branch": {
+      "title": "Branch",
+      "description": "Store branch location",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "StaffAccount": {
+      "title": "StaffAccount",
+      "description": "Staff user credentials and assigned branch",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "branch": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "password", "branch", "createdAt"]
+    },
+    "InventoryItem": {
+      "title": "InventoryItem",
+      "description": "Stock of perfume oil (ml) and bottles for a branch",
+      "type": "object",
+      "properties": {
+        "branch": { "type": "string" },
+        "name": { "type": "string" },
+        "stock_ml": { "type": "number" },
+        "stock_botol": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["branch", "name", "stock_ml", "stock_botol", "updatedAt"]
+    },
+    "MasterPrice": {
+      "title": "MasterPrice",
+      "description": "Admin controlled pricing per ml and per bottle",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price_ml": { "type": "number" },
+        "price_botol": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price_ml", "price_botol", "updatedAt"]
+    },
+    "StockOrder": {
+      "title": "StockOrder",
+      "description": "Branch stock replenishment orders to central admin",
+      "type": "object",
+      "properties": {
+        "branch": { "type": "string" },
+        "item": { "type": "string" },
+        "ml": { "type": "number" },
+        "bottleSize": { "type": "string" },
+        "botol": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["branch", "item", "ml", "bottleSize", "botol", "status", "createdAt", "updatedAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Sales records across branches",
+      "type": "object",
+      "properties": {
+        "branch": { "type": "string" },
+        "type": { "type": "string" },
+        "item": { "type": "string" },
+        "detail": { "type": "string" },
+        "price": { "type": "number" },
+        "member": { "type": "string" },
+        "pointsEarned": { "type": "number" },
+        "time": { "type": "string" },
+        "date": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["branch", "type", "item", "price", "member", "date", "createdAt"]
+    },
+    "Member": {
+      "title": "Member",
+      "description": "Registered loyalty customer",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "points": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "phone", "points", "createdAt"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Global application settings and backup destination",
+      "type": "object",
+      "properties": {
+        "appLogo": { "type": "string" },
+        "googleDriveSyncAccount": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["googleDriveSyncAccount", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/branches/{branchId}": {
+      "schema": "Branch",
+      "description": "Store branches"
+    },
+    "/staff/{staffId}": {
+      "schema": "StaffAccount",
+      "description": "Staff login accounts"
+    },
+    "/inventory/{itemId}": {
+      "schema": "InventoryItem",
+      "description": "Branch inventory items"
+    },
+    "/master_prices/{priceId}": {
+      "schema": "MasterPrice",
+      "description": "Master pricing list"
+    },
+    "/stock_orders/{orderId}": {
+      "schema": "StockOrder",
+      "description": "Stock orders"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Sales transactions"
+    },
+    "/members/{memberId}": {
+      "schema": "Member",
+      "description": "Loyalty members"
+    },
+    "/settings/{settingId}": {
+      "schema": "Setting",
+      "description": "Global settings"
+    }
+  }
+}

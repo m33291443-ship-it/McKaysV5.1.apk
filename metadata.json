@@ -1,0 +1,6 @@
+{
+  "name": "McKays",
+  "description": "Sistem Kasir dan Sinkronisasi Stok Multi-Cabang McKays POS",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
