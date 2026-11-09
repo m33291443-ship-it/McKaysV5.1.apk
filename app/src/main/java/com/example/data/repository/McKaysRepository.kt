@@ -225,6 +225,12 @@ class McKaysRepository(private val context: Context) {
         db.collection("master_prices").document(docId).set(price.copy(id = docId)).await()
     }
 
+    suspend fun getStaffAccount(username: String, pass: String): StaffAccount? {
+        val allStaff = db.collection("staff").get().await()
+        return allStaff.documents.mapNotNull { it.toObject(StaffAccount::class.java) }
+            .find { it.username.equals(username.trim(), ignoreCase = true) && it.password == pass.trim() }
+    }
+
     suspend fun saveStaffAccount(staff: StaffAccount) {
         val docId = if (staff.id.isBlank()) UUID.randomUUID().toString() else staff.id
         db.collection("staff").document(docId).set(staff.copy(id = docId)).await()

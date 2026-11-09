@@ -95,38 +95,50 @@ class McKaysViewModel(application: Application) : AndroidViewModel(application) 
         _currentTab.value = tab
     }
 
-    fun login(username: String, pass: String): Boolean {
-        if (username.trim() == "mckays" && pass == "bismillah22") {
-            val adminUser = UserSession(
-                username = "mckays",
-                role = "admin",
-                branch = "Pusat",
-                profilePic = prefs.getString("user_pic_mckays", null)
-            )
-            _currentUser.value = adminUser
-            saveUserSession(adminUser)
-            showToast("Login berhasil sebagai Admin Pusat!")
-            return true
-        }
+    fun login(username: String, pass: String) {
+        viewModelScope.launch {
+            val cleanUser = username.trim()
+            val cleanPass = pass.trim()
+            if (cleanUser == "mckays" && cleanPass == "bismillah22") {
+                val adminUser = UserSession(
+                    username = "mckays",
+                    role = "admin",
+                    branch = "Pusat",
+                    profilePic = prefs.getString("user_pic_mckays", null)
+                )
+                _currentUser.value = adminUser
+                saveUserSession(adminUser)
+                showToast("Login berhasil sebagai Admin Pusat!")
+                return@launch
+            }
 
-        val found = staffAccounts.value.find {
-            it.username.equals(username.trim(), ignoreCase = true) && it.password == pass
-        }
-        if (found != null) {
-            val staffUser = UserSession(
-                username = found.username,
-                role = "staff",
-                branch = found.branch,
-                profilePic = prefs.getString("user_pic_${found.username}", null)
-            )
-            _currentUser.value = staffUser
-            saveUserSession(staffUser)
-            showToast("Login berhasil sebagai Staff (${found.branch})!")
-            return true
-        }
+            var found = staffAccounts.value.find {
+                it.username.equals(cleanUser, ignoreCase = true) && it.password == cleanPass
+            }
 
-        showToast("ID atau Password salah!")
-        return false
+            if (found == null) {
+                try {
+                    found = repository.getStaffAccount(cleanUser, cleanPass)
+                } catch (e: Exception) {
+                    Log.e("McKaysViewModel", "Error fetching staff account", e)
+                }
+            }
+
+            if (found != null) {
+                val staffUser = UserSession(
+                    username = found.username,
+                    role = "staff",
+                    branch = found.branch,
+                    profilePic = prefs.getString("user_pic_${found.username}", null)
+                )
+                _currentUser.value = staffUser
+                saveUserSession(staffUser)
+                showToast("Login berhasil sebagai Staff (${found.branch})!")
+                return@launch
+            }
+
+            showToast("ID atau Password salah!")
+        }
     }
 
     private fun saveUserSession(user: UserSession) {
@@ -257,8 +269,12 @@ class McKaysViewModel(application: Application) : AndroidViewModel(application) 
     fun updateStaffPassword(staffId: String, newPass: String) {
         viewModelScope.launch {
             repository.updateStaffPassword(staffId, newPass.trim())
-            showToast("Password staff berhasil diperbarui!")
+            showToast("Password staff berhasil direset!")
         }
+    }
+
+    fun resetStaffPassword(staffId: String, newPass: String) {
+        updateStaffPassword(staffId, newPass)
     }
 
     fun deleteStaffAccount(staffId: String) {

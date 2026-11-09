@@ -594,14 +594,15 @@ fun ProfileTab(
                                     color = textPrimary
                                 )
 
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                     Text(
-                                        text = if (editingStaffId == staff.id) "Batal" else "Ganti Pass",
+                                        text = if (editingStaffId == staff.id) "Batal" else "Reset Password",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = BluePrimary,
                                         modifier = Modifier.clickable {
                                             editingStaffId = if (editingStaffId == staff.id) null else staff.id
+                                            editStaffNewPass = ""
                                         }
                                     )
                                     Text(
@@ -633,7 +634,7 @@ fun ProfileTab(
                                     Button(
                                         onClick = {
                                             if (editStaffNewPass.isNotBlank()) {
-                                                viewModel.updateStaffPassword(staff.id, editStaffNewPass)
+                                                viewModel.resetStaffPassword(staff.id, editStaffNewPass)
                                                 editingStaffId = null
                                                 editStaffNewPass = ""
                                             }
@@ -641,7 +642,7 @@ fun ProfileTab(
                                         shape = RoundedCornerShape(10.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = EmeraldSuccess)
                                     ) {
-                                        Text("Simpan", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        Text("Reset", fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
